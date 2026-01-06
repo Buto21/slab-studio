@@ -1,0 +1,53 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2822
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\froman\fcharset0 Times-Roman;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs24 \cf0 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 <script>\
+    // V26.2 Background Persistence Module\
+    let wakeLock = null;\
+\
+    // 1. Request WakeLock to keep the script running\
+    async function requestWakeLock() \{\
+        try \{\
+            if ('wakeLock' in navigator) \{\
+                wakeLock = await navigator.wakeLock.request('screen');\
+                log("WAKELOCK ACTIVE.", "t-success");\
+            \}\
+        \} catch (err) \{\
+            log("WAKELOCK DENIED.", "t-fail");\
+        \}\
+    \}\
+\
+    // 2. The "Media Session" API (This enables background play on iOS/Android)\
+    function setupMediaSession() \{\
+        if ('mediaSession' in navigator) \{\
+            navigator.mediaSession.metadata = new MediaMetadata(\{\
+                title: metadata.title,\
+                artist: metadata.artist,\
+                album: 'Slab Studio Session',\
+                artwork: [\{ src: ui.art.src || '', sizes: '512x512', type: 'image/png' \}]\
+            \});\
+\
+            // This tells the phone the app is "playing" even when minimized\
+            navigator.mediaSession.setActionHandler('play', () => \{ audioCtx.resume(); \});\
+            navigator.mediaSession.setActionHandler('pause', () => \{ audioCtx.suspend(); \});\
+        \}\
+    \}\
+\
+    // Update the Engage button to trigger these\
+    ui.engage.onclick = async () => \{\
+        if (audioCtx.state === 'suspended') await audioCtx.resume();\
+        \
+        await requestWakeLock(); // Keep CPU alive\
+        setupMediaSession();    // Enable background controls\
+        \
+        // ... (rest of your existing engage logic)\
+        masterBus = audioCtx.createGain();\
+        // ...\
+    \};\
+</script>}
